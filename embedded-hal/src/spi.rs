@@ -171,13 +171,15 @@
 //! - Allows the end user more flexibility. For example, they can choose to not configure any delay if their MCU is slow
 //!   enough to "naturally" do the delay (very common if the delay is in the order of nanoseconds).
 
+#[cfg(not(feature = "certified_subset"))]
 use core::fmt::Debug;
 
 #[cfg(feature = "defmt-03")]
 use crate::defmt;
 
 /// Clock polarity.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum Polarity {
     /// Clock signal low when idle.
@@ -187,7 +189,8 @@ pub enum Polarity {
 }
 
 /// Clock phase.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum Phase {
     /// Data in "captured" on the first clock transition.
@@ -197,7 +200,8 @@ pub enum Phase {
 }
 
 /// SPI mode.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub struct Mode {
     /// Clock polarity.
@@ -231,7 +235,18 @@ pub const MODE_3: Mode = Mode {
 };
 
 /// SPI error.
+#[cfg(not(feature = "certified_subset"))]
 pub trait Error: Debug {
+    /// Convert error to a generic SPI error kind.
+    ///
+    /// By using this method, SPI errors freely defined by HAL implementations
+    /// can be converted to a set of generic SPI errors upon which generic
+    /// code can act.
+    fn kind(&self) -> ErrorKind;
+}
+
+#[cfg(feature = "certified_subset")]
+pub trait Error {
     /// Convert error to a generic SPI error kind.
     ///
     /// By using this method, SPI errors freely defined by HAL implementations
@@ -252,7 +267,8 @@ impl Error for core::convert::Infallible {
 /// This represents a common set of SPI operation errors. HAL implementations are
 /// free to define more specific or additional error types. However, by providing
 /// a mapping to these common SPI errors, generic code can still react to them.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug, Ord, Hash))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[non_exhaustive]
 pub enum ErrorKind {
@@ -277,6 +293,7 @@ impl Error for ErrorKind {
 
 impl core::error::Error for ErrorKind {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for ErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -317,7 +334,8 @@ impl<T: ErrorType + ?Sized> ErrorType for &mut T {
 /// SPI transaction operation.
 ///
 /// This allows composition of SPI operations into a single bus transaction.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum Operation<'a, Word: 'static> {
     /// Read data into the provided buffer.

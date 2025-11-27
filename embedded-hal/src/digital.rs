@@ -6,7 +6,19 @@ use core::ops::Not;
 use crate::defmt;
 
 /// Error.
+
+#[cfg(not(feature = "certified_subset"))]
 pub trait Error: core::fmt::Debug {
+    /// Convert error to a generic error kind
+    ///
+    /// By using this method, errors freely defined by HAL implementations
+    /// can be converted to a set of generic errors upon which generic
+    /// code can act.
+    fn kind(&self) -> ErrorKind;
+}
+
+#[cfg(feature = "certified_subset")]
+pub trait Error {
     /// Convert error to a generic error kind
     ///
     /// By using this method, errors freely defined by HAL implementations
@@ -26,7 +38,8 @@ impl Error for core::convert::Infallible {
 /// This represents a common set of operation errors. HAL implementations are
 /// free to define more specific or additional error types. However, by providing
 /// a mapping to these common errors, generic code can still react to them.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug, Ord, Hash))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[non_exhaustive]
 pub enum ErrorKind {
@@ -43,6 +56,7 @@ impl Error for ErrorKind {
 
 impl core::error::Error for ErrorKind {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for ErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -81,7 +95,8 @@ impl<T: ErrorType + ?Sized> ErrorType for &mut T {
 /// assert_eq!(state, PinState::Low);
 /// assert_eq!(!state, PinState::High);
 /// ```
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum PinState {
     /// Low pin state.

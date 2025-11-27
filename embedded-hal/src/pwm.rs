@@ -4,11 +4,22 @@
 use crate::defmt;
 
 /// Error
+#[cfg(not(feature = "certified_subset"))]
 pub trait Error: core::fmt::Debug {
     /// Convert error to a generic error kind.
     ///
     /// By using this method, errors freely defined by HAL implementations
     /// can be converted to a set of generic errors upon which generic
+    /// code can act.
+    fn kind(&self) -> ErrorKind;
+}
+
+#[cfg(feature = "certified_subset")]
+pub trait Error {
+    /// Convert error to a generic serial error kind
+    ///
+    /// By using this method, serial errors freely defined by HAL implementations
+    /// can be converted to a set of generic serial errors upon which generic
     /// code can act.
     fn kind(&self) -> ErrorKind;
 }
@@ -25,7 +36,8 @@ impl Error for core::convert::Infallible {
 /// This represents a common set of operation errors. HAL implementations are
 /// free to define more specific or additional error types. However, by providing
 /// a mapping to these common errors, generic code can still react to them.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug, Ord, Hash))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[non_exhaustive]
 pub enum ErrorKind {
@@ -42,6 +54,7 @@ impl Error for ErrorKind {
 
 impl core::error::Error for ErrorKind {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for ErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

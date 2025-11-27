@@ -167,11 +167,22 @@ use crate::private;
 use crate::defmt;
 
 /// I2C error.
+#[cfg(not(feature = "certified_subset"))]
 pub trait Error: core::fmt::Debug {
     /// Convert error to a generic I2C error kind.
     ///
     /// By using this method, I2C errors freely defined by HAL implementations
     /// can be converted to a set of generic I2C errors upon which generic
+    /// code can act.
+    fn kind(&self) -> ErrorKind;
+}
+
+#[cfg(feature = "certified_subset")]
+pub trait Error {
+    /// Convert error to a generic serial error kind
+    ///
+    /// By using this method, serial errors freely defined by HAL implementations
+    /// can be converted to a set of generic serial errors upon which generic
     /// code can act.
     fn kind(&self) -> ErrorKind;
 }
@@ -188,7 +199,8 @@ impl Error for core::convert::Infallible {
 /// This represents a common set of I2C operation errors. HAL implementations are
 /// free to define more specific or additional error types. However, by providing
 /// a mapping to these common I2C errors, generic code can still react to them.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug, Ord, Hash))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 #[non_exhaustive]
 pub enum ErrorKind {
@@ -212,7 +224,8 @@ pub enum ErrorKind {
 /// In cases where it is possible, a device should indicate if a no acknowledge
 /// response was received to an address versus a no acknowledge to a data byte.
 /// Where it is not possible to differentiate, `Unknown` should be indicated.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug, Ord, Hash))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum NoAcknowledgeSource {
     /// The device did not acknowledge its address. The device may be missing.
@@ -234,6 +247,7 @@ impl Error for ErrorKind {
 
 impl core::error::Error for ErrorKind {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for ErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -250,6 +264,7 @@ impl core::fmt::Display for ErrorKind {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for NoAcknowledgeSource {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -302,7 +317,8 @@ impl AddressMode for TenBitAddress {}
 /// I2C operation.
 ///
 /// Several operations can be combined as part of a transaction.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
 pub enum Operation<'a> {
     /// Read data into the provided buffer.

@@ -1,7 +1,18 @@
 //! Serial interface.
 
 /// Serial error.
+#[cfg(not(feature = "certified_subset"))]
 pub trait Error: core::fmt::Debug {
+    /// Convert error to a generic serial error kind
+    ///
+    /// By using this method, serial errors freely defined by HAL implementations
+    /// can be converted to a set of generic serial errors upon which generic
+    /// code can act.
+    fn kind(&self) -> ErrorKind;
+}
+
+#[cfg(feature = "certified_subset")]
+pub trait Error {
     /// Convert error to a generic serial error kind
     ///
     /// By using this method, serial errors freely defined by HAL implementations
@@ -22,7 +33,8 @@ impl Error for core::convert::Infallible {
 /// This represents a common set of serial operation errors. HAL implementations are
 /// free to define more specific or additional error types. However, by providing
 /// a mapping to these common serial errors, generic code can still react to them.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug, Ord, Hash))]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
 #[non_exhaustive]
 pub enum ErrorKind {
     /// The peripheral receive buffer was overrun.
@@ -47,6 +59,7 @@ impl Error for ErrorKind {
 
 impl core::error::Error for ErrorKind {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for ErrorKind {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -118,6 +131,7 @@ impl<T: Write<Word> + ?Sized, Word: Copy> Write<Word> for &mut T {
 /// Implementation of `core::fmt::Write` for the HAL's `serial::Write`.
 ///
 /// TODO write example of usage
+#[cfg(not(feature = "certified_subset"))]
 impl<Word, Error: self::Error> core::fmt::Write for dyn Write<Word, Error = Error> + '_
 where
     Word: Copy + From<u8>,

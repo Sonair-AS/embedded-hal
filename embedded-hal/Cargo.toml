@@ -18,6 +18,7 @@ version = "1.0.0"
 
 [features]
 defmt-03 = ["dep:defmt-03"]
+certified_subset = []
 
 [dependencies]
 defmt-03 = { package = "defmt", version = "0.3", optional = true }
