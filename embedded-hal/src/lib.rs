@@ -5,6 +5,8 @@
 pub mod delay;
 pub mod digital;
 pub mod i2c;
+// Todo: Remove this once From<u16> and friends are included
+#[cfg(not(feature = "certified_subset"))]
 pub mod pwm;
 pub mod spi;
 

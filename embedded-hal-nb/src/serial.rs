@@ -57,6 +57,8 @@ impl Error for ErrorKind {
     }
 }
 
+// Todo: Remove this once core::error:Error is included
+#[cfg(not(feature = "certified_subset"))]
 impl core::error::Error for ErrorKind {}
 
 #[cfg(not(feature = "certified_subset"))]
