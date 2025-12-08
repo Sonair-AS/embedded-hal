@@ -49,6 +49,7 @@ pub trait Frame: Sized {
 }
 
 /// CAN error
+#[cfg(not(feature = "certified_subset"))]
 pub trait Error: core::fmt::Debug {
     /// Convert error to a generic CAN error kind
     ///
@@ -63,7 +64,8 @@ pub trait Error: core::fmt::Debug {
 /// This represents a common set of CAN operation errors. HAL implementations are
 /// free to define more specific or additional error types. However, by providing
 /// a mapping to these common CAN errors, generic code can still react to them.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum ErrorKind {
     /// The peripheral receive buffer was overrun.
     Overrun,
@@ -93,12 +95,14 @@ pub enum ErrorKind {
     Other,
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl Error for ErrorKind {
     fn kind(&self) -> ErrorKind {
         *self
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {

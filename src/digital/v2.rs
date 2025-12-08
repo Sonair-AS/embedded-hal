@@ -14,7 +14,8 @@ use core::{convert::From, ops::Not};
 /// assert_eq!(state, PinState::Low);
 /// assert_eq!(!state, PinState::High);
 /// ```
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum PinState {
     /// Low pin state
     Low,

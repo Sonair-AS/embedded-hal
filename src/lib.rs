@@ -691,6 +691,7 @@ extern crate void;
 
 pub mod adc;
 pub mod blocking;
+#[cfg(not(feature = "certified_subset"))]
 pub mod can;
 pub mod digital;
 pub mod fmt;
@@ -984,7 +985,8 @@ pub trait Qei {
 /// Count direction
 ///
 /// *This enumeration is available if embedded-hal is built with the `"unproven"` feature.*
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[derive(Clone, Copy, Eq, PartialEq)]
 #[cfg(feature = "unproven")]
 // reason: part of the unproven `Qei` interface
 pub enum Direction {

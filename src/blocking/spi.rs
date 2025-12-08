@@ -108,7 +108,8 @@ pub mod write_iter {
 /// Operation for transactional SPI trait
 ///
 /// This allows composition of SPI operations into a single bus transaction
-#[derive(Debug, PartialEq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[derive(PartialEq)]
 pub enum Operation<'a, W: 'static> {
     /// Write data from the provided buffer, discarding read data
     Write(&'a [W]),

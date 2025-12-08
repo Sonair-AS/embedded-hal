@@ -18,11 +18,12 @@ pub use blocking::spi::{
     Transfer as _embedded_hal_blocking_spi_Transfer, Write as _embedded_hal_blocking_spi_Write,
 };
 #[allow(deprecated)]
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use digital::InputPin as _embedded_hal_digital_InputPin;
 #[allow(deprecated)]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use digital::OutputPin as _embedded_hal_digital_OutputPin;
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 #[allow(deprecated)]
 pub use digital::ToggleableOutputPin as _embedded_hal_digital_ToggleableOutputPin;
 pub use serial::Read as _embedded_hal_serial_Read;

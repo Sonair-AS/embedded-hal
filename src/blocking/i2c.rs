@@ -239,7 +239,8 @@ pub trait WriteIterRead<A: AddressMode = SevenBitAddress> {
 /// Transactional I2C operation.
 ///
 /// Several operations can be combined as part of a transaction.
-#[derive(Debug, PartialEq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[derive(PartialEq)]
 pub enum Operation<'a> {
     /// Read data into the provided buffer
     Read(&'a mut [u8]),

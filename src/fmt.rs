@@ -1,8 +1,10 @@
 //! Implementation of `core::fmt::Write` for the HAL's `serial::Write`.
 //!
 //! TODO write example of usage
+#[cfg(not(feature = "certified_subset"))]
 use core::fmt::{Result, Write};
 
+#[cfg(not(feature = "certified_subset"))]
 impl<Word, Error> Write for dyn (::serial::Write<Word, Error = Error>)
 where
     Word: From<u8>,
