@@ -14,7 +14,7 @@ repository = "https://github.com/rust-embedded/embedded-hal"
 
 [dependencies]
 embedded-hal = { version = "1.0.0", path = "../embedded-hal" }
-nb = { git = "https://github.com/Sonair-AS/nb.git", branch = "certified_subset" }
+nb = "1"
 
 [dev-dependencies]
 cortex-m-rt = "0.7"
