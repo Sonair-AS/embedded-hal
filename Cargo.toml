@@ -16,12 +16,10 @@ version = "0.2.7"
 
 [dependencies.void]
 default-features = false
-git = "https://github.com/Sonair-AS/rust-void.git"
-branch = "certified_subset"
+version = "1.0.2"
 
 [dependencies.nb]
-git = "https://github.com/Sonair-AS/nb.git"
-branch = "certified_subset"
+version = "1.1.0"
 
 [dev-dependencies]
 stm32f30x = "0.8.0"
