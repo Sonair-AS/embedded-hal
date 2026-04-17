@@ -13,6 +13,7 @@ name = "embedded-hal"
 readme = "README.md"
 repository = "https://github.com/rust-embedded/embedded-hal"
 version = "0.2.7"
+edition = "2021"
 
 [dependencies.void]
 default-features = false
