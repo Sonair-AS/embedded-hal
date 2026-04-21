@@ -752,7 +752,7 @@ pub mod watchdog;
 /// #     fn set_resolution<T>(&mut self, _: T) where T: Into<MilliSeconds> {}
 /// # }
 /// ```
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 // reason: pre-singletons API. With singletons a `CapturePin` (cf. `PwmPin`) trait seems more
 // appropriate
 pub trait Capture {
@@ -846,7 +846,7 @@ pub trait Capture {
 /// #     fn set_period<T>(&mut self, _: T) where T: Into<KiloHertz> {}
 /// # }
 /// ```
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 // reason: pre-singletons API. The `PwmPin` trait seems more useful because it models independent
 // PWM channels. Here a certain number of channels are multiplexed in a single implementer.
 pub trait Pwm {

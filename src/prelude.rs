@@ -32,13 +32,13 @@ pub use crate::spi::FullDuplex as _embedded_hal_spi_FullDuplex;
 pub use crate::timer::CountDown as _embedded_hal_timer_CountDown;
 #[cfg(feature = "unproven")]
 pub use crate::watchdog::Watchdog as _embedded_hal_watchdog_Watchdog;
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use crate::watchdog::WatchdogDisable as _embedded_hal_watchdog_WatchdogDisable;
 #[cfg(feature = "unproven")]
 pub use crate::watchdog::WatchdogEnable as _embedded_hal_watchdog_WatchdogEnable;
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use crate::Capture as _embedded_hal_Capture;
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use crate::Pwm as _embedded_hal_Pwm;
 pub use crate::PwmPin as _embedded_hal_PwmPin;
 #[cfg(feature = "unproven")]

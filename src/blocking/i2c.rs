@@ -166,6 +166,7 @@ pub trait Write<A: AddressMode = SevenBitAddress> {
 }
 
 /// Blocking write (iterator version)
+#[cfg(not(feature = "certified_subset"))]
 pub trait WriteIter<A: AddressMode = SevenBitAddress> {
     /// Error type
     type Error;
@@ -216,6 +217,7 @@ pub trait WriteRead<A: AddressMode = SevenBitAddress> {
 }
 
 /// Blocking write (iterator version) + read
+#[cfg(not(feature = "certified_subset"))]
 pub trait WriteIterRead<A: AddressMode = SevenBitAddress> {
     /// Error type
     type Error;
@@ -239,6 +241,7 @@ pub trait WriteIterRead<A: AddressMode = SevenBitAddress> {
 /// Transactional I2C operation.
 ///
 /// Several operations can be combined as part of a transaction.
+#[cfg(not(feature = "certified_subset"))]
 #[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[derive(PartialEq)]
 pub enum Operation<'a> {
@@ -251,6 +254,7 @@ pub enum Operation<'a> {
 /// Transactional I2C interface.
 ///
 /// This allows combining operations within an I2C transaction.
+#[cfg(not(feature = "certified_subset"))]
 pub trait Transactional<A: AddressMode = SevenBitAddress> {
     /// Error type
     type Error;
@@ -275,6 +279,7 @@ pub trait Transactional<A: AddressMode = SevenBitAddress> {
 /// Transactional I2C interface (iterator version).
 ///
 /// This allows combining operation within an I2C transaction.
+#[cfg(not(feature = "certified_subset"))]
 pub trait TransactionalIter<A: AddressMode = SevenBitAddress> {
     /// Error type
     type Error;

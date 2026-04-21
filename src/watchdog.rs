@@ -23,7 +23,7 @@ pub trait WatchdogEnable {
 }
 
 /// Disables a running watchdog timer so the processor won't be reset.
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub trait WatchdogDisable {
     /// Disables the watchdog
     fn disable(&mut self);

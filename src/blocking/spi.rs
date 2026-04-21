@@ -19,7 +19,7 @@ pub trait Write<W> {
 }
 
 /// Blocking write (iterator version)
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub trait WriteIter<W> {
     /// Error type
     type Error;
@@ -78,7 +78,7 @@ pub mod write {
 }
 
 /// Blocking write (iterator version)
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub mod write_iter {
     /// Default implementation of `blocking::spi::WriteIter<W>` for implementers of
     /// `spi::FullDuplex<W>`
@@ -108,6 +108,7 @@ pub mod write_iter {
 /// Operation for transactional SPI trait
 ///
 /// This allows composition of SPI operations into a single bus transaction
+#[cfg(not(feature = "certified_subset"))]
 #[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[derive(PartialEq)]
 pub enum Operation<'a, W: 'static> {
@@ -119,6 +120,7 @@ pub enum Operation<'a, W: 'static> {
 
 /// Transactional trait allows multiple actions to be executed
 /// as part of a single SPI transaction
+#[cfg(not(feature = "certified_subset"))]
 pub trait Transactional<W: 'static> {
     /// Associated error type
     type Error;

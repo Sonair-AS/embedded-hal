@@ -81,6 +81,7 @@ pub trait CountDown {
 pub trait Periodic {}
 
 /// Trait for cancelable countdowns.
+#[cfg(not(feature = "certified_subset"))]
 pub trait Cancel: CountDown {
     /// Error returned when a countdown can't be canceled.
     type Error;
