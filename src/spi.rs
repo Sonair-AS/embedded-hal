@@ -11,7 +11,7 @@ use nb;
 /// - Due to how full duplex SPI works each `read` call must be preceded by a `send` call.
 ///
 /// - Some SPIs can work with 8-bit *and* 16-bit words. You can overload this trait with different
-/// `Word` types to allow operation in both modes.
+///   `Word` types to allow operation in both modes.
 pub trait FullDuplex<Word> {
     /// An enumeration of SPI errors
     type Error;

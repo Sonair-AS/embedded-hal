@@ -12,32 +12,32 @@
 //! The HAL
 //!
 //! - Must *erase* device specific details. Neither register, register blocks or magic values should
-//! appear in the API.
+//!   appear in the API.
 //!
 //! - Must be generic *within* a device and *across* devices. The API to use a serial interface must
-//! be the same regardless of whether the implementation uses the USART1 or UART4 peripheral of a
-//! device or the UART0 peripheral of another device.
+//!   be the same regardless of whether the implementation uses the USART1 or UART4 peripheral of a
+//!   device or the UART0 peripheral of another device.
 //!
 //! - Where possible must *not* be tied to a specific asynchronous model. The API should be usable
-//! in blocking mode, with the `futures` model, with an async/await model or with a callback model.
-//! (cf. the [`nb`] crate)
+//!   in blocking mode, with the `futures` model, with an async/await model or with a callback model.
+//!   (cf. the [`nb`] crate)
 //!
 //! - Must be minimal, and thus easy to implement and zero cost, yet highly composable. People that
-//! want higher level abstraction should *prefer to use this HAL* rather than *re-implement*
-//! register manipulation code.
+//!   want higher level abstraction should *prefer to use this HAL* rather than *re-implement*
+//!   register manipulation code.
 //!
 //! - Serve as a foundation for building an ecosystem of platform agnostic drivers. Here driver
-//! means a library crate that lets a target platform interface an external device like a digital
-//! sensor or a wireless transceiver. The advantage of this system is that by writing the driver as
-//! a generic library on top of `embedded-hal` driver authors can support any number of target
-//! platforms (e.g. Cortex-M microcontrollers, AVR microcontrollers, embedded Linux, etc.). The
-//! advantage for application developers is that by adopting `embedded-hal` they can unlock all
-//! these drivers for their platform.
+//!   means a library crate that lets a target platform interface an external device like a digital
+//!   sensor or a wireless transceiver. The advantage of this system is that by writing the driver as
+//!   a generic library on top of `embedded-hal` driver authors can support any number of target
+//!   platforms (e.g. Cortex-M microcontrollers, AVR microcontrollers, embedded Linux, etc.). The
+//!   advantage for application developers is that by adopting `embedded-hal` they can unlock all
+//!   these drivers for their platform.
 //!
 //! # Out of scope
 //!
 //! - Initialization and configuration stuff like "ensure this serial interface and that SPI
-//! interface are not using the same pins". The HAL will focus on *doing I/O*.
+//!   interface are not using the same pins". The HAL will focus on *doing I/O*.
 //!
 //! # Reference implementation
 //!
@@ -234,237 +234,6 @@
 //! # }
 //! ```
 //!
-//! ### `futures`
-//!
-//! An example of running two tasks concurrently. First task: blink an LED every
-//! second. Second task: loop back data over the serial interface.
-//!
-//! ```
-//! extern crate embedded_hal as hal;
-//! extern crate futures;
-//! extern crate void;
-//!
-//! #[macro_use(try_nb)]
-//! extern crate nb;
-//!
-//! use hal::prelude::*;
-//! use futures::{
-//!     future,
-//!     Async,
-//!     Future,
-//! };
-//! use futures::future::Loop;
-//! use stm32f30x_hal::{Led, Serial1, Timer6};
-//! use void::Void;
-//!
-//! /// `futures` version of `CountDown.wait`
-//! ///
-//! /// This returns a future that must be polled to completion
-//! fn wait<T>(mut timer: T) -> impl Future<Item = T, Error = Void>
-//! where
-//!     T: hal::timer::CountDown,
-//! {
-//!     let mut timer = Some(timer);
-//!     future::poll_fn(move || {
-//!         try_nb!(timer.as_mut().unwrap().wait());
-//!
-//!         Ok(Async::Ready(timer.take().unwrap()))
-//!     })
-//! }
-//!
-//! /// `futures` version of `Serial.read`
-//! ///
-//! /// This returns a future that must be polled to completion
-//! fn read<S>(mut serial: S) -> impl Future<Item = (S, u8), Error = S::Error>
-//! where
-//!     S: hal::serial::Read<u8>,
-//! {
-//!     let mut serial = Some(serial);
-//!     future::poll_fn(move || {
-//!         let byte = try_nb!(serial.as_mut().unwrap().read());
-//!
-//!         Ok(Async::Ready((serial.take().unwrap(), byte)))
-//!     })
-//! }
-//!
-//! /// `futures` version of `Serial.write`
-//! ///
-//! /// This returns a future that must be polled to completion
-//! fn write<S>(mut serial: S, byte: u8) -> impl Future<Item = S, Error = S::Error>
-//! where
-//!     S: hal::serial::Write<u8>,
-//! {
-//!     let mut serial = Some(serial);
-//!     future::poll_fn(move || {
-//!         try_nb!(serial.as_mut().unwrap().write(byte));
-//!
-//!         Ok(Async::Ready(serial.take().unwrap()))
-//!     })
-//! }
-//!
-//! fn main() {
-//!     // HAL implementers
-//!     let timer: Timer6 = {
-//!         // ..
-//! #       Timer6
-//!     };
-//!     let serial: Serial1 = {
-//!         // ..
-//! #       Serial1
-//!     };
-//!     let led: Led = {
-//!         // ..
-//! #       Led
-//!     };
-//!
-//!     // Tasks
-//!     let mut blinky = future::loop_fn::<_, (), _, _>(
-//!         (led, timer, true),
-//!         |(mut led, mut timer, state)| {
-//!             wait(timer).map(move |timer| {
-//!                 if state {
-//!                     led.on();
-//!                 } else {
-//!                     led.off();
-//!                 }
-//!
-//!                 Loop::Continue((led, timer, !state))
-//!             })
-//!         });
-//!
-//!     let mut loopback = future::loop_fn::<_, (), _, _>(serial, |mut serial| {
-//!         read(serial).and_then(|(serial, byte)| {
-//!             write(serial, byte)
-//!         }).map(|serial| {
-//!             Loop::Continue(serial)
-//!         })
-//!     });
-//!
-//!     // Event loop
-//!     loop {
-//!         blinky.poll().unwrap(); // NOTE(unwrap) E = Void
-//!         loopback.poll().unwrap();
-//! #       break;
-//!     }
-//! }
-//!
-//! # mod stm32f30x_hal {
-//! #     extern crate void;
-//! #     use self::void::Void;
-//! #     pub struct Timer6;
-//! #     impl ::hal::timer::CountDown for Timer6 {
-//! #         type Time = ();
-//! #
-//! #         fn start<T>(&mut self, _: T) where T: Into<()> {}
-//! #         fn wait(&mut self) -> ::nb::Result<(), Void> { Err(::nb::Error::WouldBlock) }
-//! #     }
-//! #
-//! #     pub struct Serial1;
-//! #     impl ::hal::serial::Read<u8> for Serial1 {
-//! #         type Error = Void;
-//! #         fn read(&mut self) -> ::nb::Result<u8, Void> { Err(::nb::Error::WouldBlock) }
-//! #     }
-//! #     impl ::hal::serial::Write<u8> for Serial1 {
-//! #         type Error = Void;
-//! #         fn flush(&mut self) -> ::nb::Result<(), Void> { Err(::nb::Error::WouldBlock) }
-//! #         fn write(&mut self, _: u8) -> ::nb::Result<(), Void> { Err(::nb::Error::WouldBlock) }
-//! #     }
-//! #
-//! #     pub struct Led;
-//! #     impl Led {
-//! #         pub fn off(&mut self) {}
-//! #         pub fn on(&mut self) {}
-//! #     }
-//! # }
-//! ```
-//!
-//! ### `await`
-//!
-//! Same example as above but using `await!` instead of `futures`.
-//!
-//! ```
-//! #![feature(generator_trait)]
-//! #![feature(generators)]
-//!
-//! extern crate embedded_hal as hal;
-//!
-//! #[macro_use(await)]
-//! extern crate nb;
-//!
-//! use std::ops::Generator;
-//! use std::pin::Pin;
-//!
-//! use hal::prelude::*;
-//! use stm32f30x_hal::{Led, Serial1, Timer6};
-//!
-//! fn main() {
-//!     // HAL implementers
-//!     let mut timer: Timer6 = {
-//!         // ..
-//! #       Timer6
-//!     };
-//!     let mut serial: Serial1 = {
-//!         // ..
-//! #       Serial1
-//!     };
-//!     let mut led: Led = {
-//!         // ..
-//! #       Led
-//!     };
-//!
-//!     // Tasks
-//!     let mut blinky = (move || {
-//!         let mut state = false;
-//!         loop {
-//!             // `await!` means "suspend / yield here" instead of "block until
-//!             // completion"
-//!             await!(timer.wait()).unwrap(); // NOTE(unwrap) E = Void
-//!
-//!             state = !state;
-//!
-//!             if state {
-//!                 led.on();
-//!             } else {
-//!                 led.off();
-//!             }
-//!         }
-//!     });
-//!
-//!     let mut loopback = (move || {
-//!         loop {
-//!             let byte = await!(serial.read()).unwrap();
-//!             await!(serial.write(byte)).unwrap();
-//!         }
-//!     });
-//!
-//!     // Event loop
-//!     loop {
-//!         Pin::new(&mut blinky).resume(());
-//!         Pin::new(&mut loopback).resume(());
-//!         # break;
-//!     }
-//! }
-//!
-//! # mod stm32f30x_hal {
-//! #   extern crate void;
-//! #   use self::void::Void;
-//! #   pub struct Serial1;
-//! #   impl Serial1 {
-//! #       pub fn read(&mut self) -> ::nb::Result<u8, Void> { Err(::nb::Error::WouldBlock) }
-//! #       pub fn write(&mut self, _: u8) -> ::nb::Result<(), Void> { Err(::nb::Error::WouldBlock) }
-//! #   }
-//! #   pub struct Timer6;
-//! #   impl Timer6 {
-//! #       pub fn wait(&mut self) -> ::nb::Result<(), Void> { Err(::nb::Error::WouldBlock) }
-//! #   }
-//! #   pub struct Led;
-//! #   impl Led {
-//! #       pub fn off(&mut self) {}
-//! #       pub fn on(&mut self) {}
-//! #   }
-//! # }
-//! ```
-//!
 //! ## Generic programming and higher level abstractions
 //!
 //! The core of the HAL has been kept minimal on purpose to encourage building **generic** higher
@@ -547,44 +316,6 @@
 //!             Err(nb::Error::WouldBlock) => continue,
 //!             Ok(()) => return Err(Error::TimedOut),
 //!         }
-//!     }
-//! }
-//!
-//! # fn main() {}
-//! ```
-//!
-//! - Asynchronous SPI transfer
-//!
-//! ```
-//! #![feature(conservative_impl_trait)]
-//! #![feature(generators)]
-//! #![feature(generator_trait)]
-//!
-//! extern crate embedded_hal as hal;
-//! #[macro_use(await)]
-//! extern crate nb;
-//!
-//! use std::ops::Generator;
-//!
-//! /// Transfers a byte buffer of size N
-//! ///
-//! /// Returns the same byte buffer but filled with the data received from the
-//! /// slave device
-//! fn transfer<S, B>(
-//!     mut spi: S,
-//!     mut buffer: [u8; 16], // NOTE this should be generic over the size of the array
-//! ) -> impl Generator<Return = Result<(S, [u8; 16]), S::Error>, Yield = ()>
-//! where
-//!     S: hal::spi::FullDuplex<u8>,
-//! {
-//!     move || {
-//!         let n = buffer.len();
-//!         for i in 0..n {
-//!             await!(spi.send(buffer[i]))?;
-//!             buffer[i] = await!(spi.read())?;
-//!         }
-//!
-//!         Ok((spi, buffer))
 //!     }
 //! }
 //!
@@ -694,6 +425,7 @@ pub mod blocking;
 #[cfg(not(feature = "certified_subset"))]
 pub mod can;
 pub mod digital;
+#[cfg(not(feature = "certified_subset"))]
 pub mod fmt;
 pub mod prelude;
 pub mod serial;
@@ -892,6 +624,7 @@ pub trait Pwm {
 /// A single PWM channel / pin
 ///
 /// See `Pwm` for details
+#[cfg(not(feature = "certified_subset"))]
 pub trait PwmPin {
     /// Type for the `duty` methods
     ///
@@ -968,7 +701,7 @@ pub trait PwmPin {
 /// #     fn wait(&mut self) -> ::nb::Result<(), Void> { Ok(()) }
 /// # }
 /// ```
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 // reason: needs to be re-evaluated in the new singletons world. At the very least this needs a
 // reference implementation
 pub trait Qei {
@@ -987,7 +720,7 @@ pub trait Qei {
 /// *This enumeration is available if embedded-hal is built with the `"unproven"` feature.*
 #[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[derive(Clone, Copy, Eq, PartialEq)]
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 // reason: part of the unproven `Qei` interface
 pub enum Direction {
     /// 3, 2, 1

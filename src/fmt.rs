@@ -5,14 +5,14 @@
 use core::fmt::{Result, Write};
 
 #[cfg(not(feature = "certified_subset"))]
-impl<Word, Error> Write for dyn (::serial::Write<Word, Error = Error>)
+impl<Word, Error> Write for dyn crate::serial::Write<Word, Error = Error>
 where
     Word: From<u8>,
 {
     fn write_str(&mut self, s: &str) -> Result {
         let _ = s
             .as_bytes()
-            .into_iter()
+            .iter()
             .map(|c| block!(self.write(Word::from(*c))))
             .last();
         Ok(())

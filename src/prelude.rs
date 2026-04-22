@@ -17,15 +17,6 @@ pub use crate::blocking::serial::Write as _embedded_hal_blocking_serial_Write;
 pub use crate::blocking::spi::{
     Transfer as _embedded_hal_blocking_spi_Transfer, Write as _embedded_hal_blocking_spi_Write,
 };
-#[allow(deprecated)]
-#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
-pub use crate::digital::InputPin as _embedded_hal_digital_InputPin;
-#[allow(deprecated)]
-#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
-pub use crate::digital::OutputPin as _embedded_hal_digital_OutputPin;
-#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
-#[allow(deprecated)]
-pub use crate::digital::ToggleableOutputPin as _embedded_hal_digital_ToggleableOutputPin;
 pub use crate::serial::Read as _embedded_hal_serial_Read;
 pub use crate::serial::Write as _embedded_hal_serial_Write;
 pub use crate::spi::FullDuplex as _embedded_hal_spi_FullDuplex;
@@ -40,6 +31,7 @@ pub use crate::watchdog::WatchdogEnable as _embedded_hal_watchdog_WatchdogEnable
 pub use crate::Capture as _embedded_hal_Capture;
 #[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use crate::Pwm as _embedded_hal_Pwm;
+#[cfg(not(feature = "certified_subset"))]
 pub use crate::PwmPin as _embedded_hal_PwmPin;
-#[cfg(feature = "unproven")]
+#[cfg(all(feature = "unproven", not(feature = "certified_subset")))]
 pub use crate::Qei as _embedded_hal_Qei;
