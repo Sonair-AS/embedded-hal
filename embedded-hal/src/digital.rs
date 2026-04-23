@@ -6,7 +6,6 @@ use core::ops::Not;
 use crate::defmt;
 
 /// Error.
-
 #[cfg(not(feature = "certified_subset"))]
 pub trait Error: core::fmt::Debug {
     /// Convert error to a generic error kind
